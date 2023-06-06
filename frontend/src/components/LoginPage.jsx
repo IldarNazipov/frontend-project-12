@@ -36,16 +36,7 @@ const LoginPage = () => {
                 validationSchema={LoginSchema}
               >
                 {(props) => {
-                  const {
-                    values,
-                    touched,
-                    errors,
-                    dirty,
-                    isSubmitting,
-                    handleBlur,
-                    handleSubmit,
-                    handleReset,
-                  } = props;
+                  const { touched, errors } = props;
                   return (
                     <Form className='col-12 col-md-6 mt-3 mt-mb-0'>
                       <h1 className='text-center mb-4'>Войти</h1>

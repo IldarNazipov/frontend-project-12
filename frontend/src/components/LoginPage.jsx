@@ -11,13 +11,26 @@ import {
 import Img from '../assets/avatar.jpg';
 import { Formik, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-
-const LoginSchema = Yup.object().shape({
-  username: Yup.string().required('Поле "ник" не заполнено'),
-  password: Yup.string().required('Поле "пароль" не заполнено'),
-});
+import { useRef, useEffect, useContext } from 'react';
+import axios from 'axios';
+import routes from '../routes.js';
+import { useNavigate } from 'react-router-dom';
+import { AppContext } from './App';
 
 const LoginPage = () => {
+  const { logIn } = useContext(AppContext);
+  const navigate = useNavigate();
+  const inputRef = useRef();
+
+  useEffect(() => {
+    inputRef.current.focus();
+  }, []);
+
+  const LoginSchema = Yup.object().shape({
+    username: Yup.string().required('Не может быть пустым'),
+    password: Yup.string().required('Не может быть пустым'),
+  });
+
   return (
     <Container fluid className='h-100'>
       <Row className='justify-content-center align-content-center h-100'>
@@ -34,11 +47,36 @@ const LoginPage = () => {
               <Formik
                 initialValues={{ username: '', password: '' }}
                 validationSchema={LoginSchema}
+                onSubmit={async (values, { setErrors }) => {
+                  try {
+                    const response = await axios.post(
+                      routes.loginPath(),
+                      values
+                    );
+                    const data = JSON.stringify(response.data);
+                    localStorage.setItem('user', data);
+                    logIn();
+                    navigate('/');
+                  } catch (error) {
+                    if (error.isAxiosError && error.response.status === 401) {
+                      setErrors({
+                        username: '',
+                        password: 'Неверные имя пользователя или пароль',
+                      });
+                      inputRef.current.select();
+                      return;
+                    }
+                    throw error;
+                  }
+                }}
               >
                 {(props) => {
-                  const { touched, errors } = props;
+                  const { touched, errors, handleSubmit } = props;
                   return (
-                    <Form className='col-12 col-md-6 mt-3 mt-mb-0'>
+                    <Form
+                      onSubmit={handleSubmit}
+                      className='col-12 col-md-6 mt-3 mt-mb-0'
+                    >
                       <h1 className='text-center mb-4'>Войти</h1>
                       <FloatingLabel
                         controlId='username'
@@ -46,14 +84,21 @@ const LoginPage = () => {
                         className='mb-3'
                       >
                         <Field
+                          innerRef={(f) => (inputRef.current = f)}
                           name='username'
                           id='username'
                           placeholder='Ваш ник'
                           className={`form-control ${
-                            touched.username && errors.username
+                            (touched.username && errors.username) ||
+                            errors.username === ''
                               ? 'is-invalid'
                               : ''
                           }`}
+                        />
+                        <ErrorMessage
+                          component='div'
+                          name='username'
+                          className='invalid-tooltip'
                         />
                       </FloatingLabel>
                       <FloatingLabel
@@ -74,7 +119,7 @@ const LoginPage = () => {
                         />
                         <ErrorMessage
                           component='div'
-                          name='username'
+                          name='password'
                           className='invalid-tooltip'
                         />
                       </FloatingLabel>

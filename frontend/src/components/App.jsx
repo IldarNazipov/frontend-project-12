@@ -4,6 +4,8 @@ import ErrorPage from './ErrorPage.jsx';
 import LoginPage from './LoginPage.jsx';
 import Layout from './Layout.jsx';
 import ChatPage from './ChatPage.jsx';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const AppContext = createContext({});
 
@@ -29,6 +31,7 @@ const App = () => {
             />
           </Routes>
         </Layout>
+        <ToastContainer />
       </BrowserRouter>
     </AppContext.Provider>
   );

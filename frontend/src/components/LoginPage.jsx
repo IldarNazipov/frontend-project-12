@@ -10,8 +10,9 @@ import {
 } from 'react-bootstrap';
 import Img from '../assets/avatar.jpg';
 import { Formik, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import { useRef, useEffect, useContext } from 'react';
+import { toast } from 'react-toastify';
+import * as yup from 'yup';
+import { useContext } from 'react';
 import axios from 'axios';
 import routes from '../routes.js';
 import { useNavigate } from 'react-router-dom';
@@ -20,16 +21,15 @@ import { AppContext } from './App';
 const LoginPage = () => {
   const { logIn } = useContext(AppContext);
   const navigate = useNavigate();
-  const inputRef = useRef();
 
-  useEffect(() => {
-    inputRef.current.focus();
-  }, []);
-
-  const LoginSchema = Yup.object().shape({
-    username: Yup.string().required('Не может быть пустым'),
-    password: Yup.string().required('Не может быть пустым'),
+  const loginSchema = yup.object().shape({
+    username: yup.string().required('Не может быть пустым'),
+    password: yup.string().required('Не может быть пустым'),
   });
+
+  const notify = () => {
+    toast.error('Ошибка соединения');
+  };
 
   return (
     <Container fluid className='h-100'>
@@ -46,7 +46,7 @@ const LoginPage = () => {
               </Col>
               <Formik
                 initialValues={{ username: '', password: '' }}
-                validationSchema={LoginSchema}
+                validationSchema={loginSchema}
                 onSubmit={async (values, { setErrors }) => {
                   try {
                     const response = await axios.post(
@@ -58,12 +58,15 @@ const LoginPage = () => {
                     logIn();
                     navigate('/');
                   } catch (error) {
+                    if (error.message === 'Network Error') {
+                      notify();
+                      return;
+                    }
                     if (error.isAxiosError && error.response.status === 401) {
                       setErrors({
                         username: '',
                         password: 'Неверные имя пользователя или пароль',
                       });
-                      inputRef.current.select();
                       return;
                     }
                     throw error;
@@ -84,7 +87,7 @@ const LoginPage = () => {
                         className='mb-3'
                       >
                         <Field
-                          innerRef={(f) => (inputRef.current = f)}
+                          autoFocus
                           name='username'
                           id='username'
                           placeholder='Ваш ник'

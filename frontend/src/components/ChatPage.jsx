@@ -23,11 +23,12 @@ const getAuthHeader = () => {
 };
 
 const ChatPage = () => {
+  const { loggedIn } = useContext(AppContext);
   const userdata = useSelector((state) => state.userdata);
   const [messagesCount, setMessagesCount] = useState(0);
   const [activeChannel, setActiveChannel] = useState({});
+  const [authorizedUser, setAuthorizedUser] = useState('');
   const [loading, setLoading] = useState(true);
-  const { loggedIn } = useContext(AppContext);
   const dispatch = useDispatch();
   const inputRef = useRef();
 
@@ -55,6 +56,7 @@ const ChatPage = () => {
       );
       setActiveChannel(currentChannel);
       setMessagesCount(messages.length);
+      setAuthorizedUser(loggedIn.username);
     }
   }, [channels]);
 
@@ -153,7 +155,7 @@ const ChatPage = () => {
                   socket.emit('newMessage', {
                     body: values.body,
                     channelId: activeChannel.id,
-                    username: loggedIn.username,
+                    username: authorizedUser,
                   });
                   setMessagesCount(messagesCount + 1);
                   resetForm({ body: '' });

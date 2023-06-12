@@ -8,6 +8,7 @@ import axios from 'axios';
 import routes from '../routes.js';
 import { Formik, Field } from 'formik';
 import * as yup from 'yup';
+import { toast } from 'react-toastify';
 import cn from 'classnames';
 import Spinner from './Spinner.jsx';
 
@@ -32,6 +33,10 @@ const ChatPage = () => {
   const [authorizedUser, setAuthorizedUser] = useState('');
   const { channels, currentChannelId, messages } = userdata.entities;
 
+  const notify = () => {
+    toast.error('Что-то пошло не так');
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       const { data } = await axios({
@@ -42,7 +47,6 @@ const ChatPage = () => {
       if (data) {
         setLoading(false);
         dispatch(getUserdata(data));
-
         setTimeout(() => {
           messagesContainer.current.scrollTop =
             messagesContainer.current.scrollHeight;
@@ -54,11 +58,13 @@ const ChatPage = () => {
 
     socket.on('newMessage', () => {
       fetchData();
+      setMessagesCount((prevCount) => prevCount + 1);
     });
 
     return () => {
       socket.off('newMessage', () => {
         fetchData();
+        setMessagesCount((prevCount) => prevCount + 1);
       });
     };
   }, []);
@@ -175,17 +181,29 @@ const ChatPage = () => {
               <Formik
                 initialValues={{ body: '' }}
                 validationSchema={messageSchema}
-                onSubmit={(values, { resetForm }) => {
-                  socket.emit('newMessage', {
-                    body: values.body,
-                    channelId: activeChannel.id,
-                    username: authorizedUser,
-                  });
-                  resetForm({ body: '' });
+                onSubmit={(values, { resetForm, setSubmitting }) => {
+                  socket.timeout(5000).emit(
+                    'newMessage',
+                    {
+                      body: values.body,
+                      channelId: activeChannel.id,
+                      username: authorizedUser,
+                    },
+                    (err, response) => {
+                      if (response?.status) {
+                        setSubmitting(false);
+                        resetForm({ body: '' });
+                      } else {
+                        setSubmitting(false);
+                        notify();
+                      }
+                    }
+                  );
                 }}
               >
                 {(props) => {
-                  const { isValid, dirty, handleSubmit } = props;
+                  const { isValid, isSubmitting, dirty, handleSubmit } = props;
+
                   return (
                     <Form
                       noValidate
@@ -194,6 +212,7 @@ const ChatPage = () => {
                     >
                       <InputGroup hasValidation>
                         <Field
+                          disabled={isSubmitting}
                           autoFocus
                           innerRef={(f) => {
                             inputRef.current = f;

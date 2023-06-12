@@ -11,9 +11,6 @@ const userdataSlice = createSlice({
     getUserdata: (state, { payload }) => {
       state.entities = payload;
     },
-    addMessage: (state, { payload }) => {
-      state.entities.messages.push(payload);
-    },
   },
 });
 

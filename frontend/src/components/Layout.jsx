@@ -1,5 +1,6 @@
 import { useContext } from 'react';
 import { Navbar, Container, Button } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 import { AppContext } from './App';
 
 const Layout = ({ children }) => {
@@ -9,7 +10,9 @@ const Layout = ({ children }) => {
     <div className='d-flex flex-column h-100'>
       <Navbar bg='white' expand='lg' className='shadow-sm'>
         <Container>
-          <Navbar.Brand href='/'>Hexlet Chat</Navbar.Brand>
+          <Link to='/' className='navbar-brand'>
+            Hexlet Chat
+          </Link>
           {loggedIn && <Button onClick={logOut}>Выйти</Button>}
         </Container>
       </Navbar>

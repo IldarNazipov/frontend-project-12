@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Container, Row, Col, Form, InputGroup, Nav } from 'react-bootstrap';
-import { useEffect, useState, useRef, useContext } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { getUserdata, addMessage } from '../slices/userdataSlice.js';
+import { getUserdata } from '../slices/userdataSlice.js';
 import { socket } from '../socket.js';
 import axios from 'axios';
 import routes from '../routes.js';
@@ -10,7 +10,6 @@ import { Formik, Field } from 'formik';
 import * as yup from 'yup';
 import cn from 'classnames';
 import Spinner from './Spinner.jsx';
-import { AppContext } from './App.jsx';
 
 const getAuthHeader = () => {
   const lsItem = JSON.parse(localStorage.getItem('user'));
@@ -23,14 +22,15 @@ const getAuthHeader = () => {
 };
 
 const ChatPage = () => {
-  const { loggedIn } = useContext(AppContext);
   const userdata = useSelector((state) => state.userdata);
   const [messagesCount, setMessagesCount] = useState(0);
   const [activeChannel, setActiveChannel] = useState({});
-  const [authorizedUser, setAuthorizedUser] = useState('');
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
-  const inputRef = useRef();
+  const inputRef = useRef(null);
+  const messagesContainer = useRef(null);
+  const [authorizedUser, setAuthorizedUser] = useState('');
+  const { channels, currentChannelId, messages } = userdata.entities;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,29 +42,43 @@ const ChatPage = () => {
       if (data) {
         setLoading(false);
         dispatch(getUserdata(data));
+
+        setTimeout(() => {
+          messagesContainer.current.scrollTop =
+            messagesContainer.current.scrollHeight;
+        }, 0);
       }
     };
-    fetchData();
-  }, []);
 
-  const { channels, currentChannelId, messages } = userdata.entities;
+    fetchData();
+
+    socket.on('newMessage', () => {
+      fetchData();
+    });
+
+    return () => {
+      socket.off('newMessage', () => {
+        fetchData();
+      });
+    };
+  }, []);
 
   useEffect(() => {
     if (channels && currentChannelId) {
       const currentChannel = channels.find(
         (item) => item.id === currentChannelId
       );
-      setActiveChannel(currentChannel);
-      setMessagesCount(messages.length);
-      setAuthorizedUser(loggedIn.username);
-    }
-  }, [channels]);
 
-  useEffect(() => {
-    socket.on('newMessage', (payload) => {
-      dispatch(addMessage(payload));
-    });
-  }, []);
+      setActiveChannel(currentChannel);
+      setMessagesCount(
+        messages.filter((message) => message.channelId === currentChannelId)
+          .length
+      );
+
+      const authorizedUser = JSON.parse(localStorage.getItem('user')).username;
+      setAuthorizedUser(authorizedUser);
+    }
+  }, [currentChannelId]);
 
   const getButtonClass = (id) => {
     const isActive = activeChannel.id === id;
@@ -118,7 +132,11 @@ const ChatPage = () => {
                       const currentChannel = channels.find(
                         (channel) => item.id === channel.id
                       );
+                      const activeMessages = messages.filter(
+                        (message) => message.channelId === currentChannel.id
+                      );
                       setActiveChannel(currentChannel);
+                      setMessagesCount(activeMessages.length);
                       inputRef.current.focus();
                     }}
                     type='button'
@@ -139,13 +157,19 @@ const ChatPage = () => {
               </p>
               <span className='text-muted'>{messagesCount} сообщений</span>
             </div>
-            <div id='messages-box' className='chat-messages overflow-auto px-5'>
+            <div
+              id='messages-box'
+              ref={messagesContainer}
+              className='chat-messages overflow-auto px-5'
+            >
               {messages &&
-                messages.map((message) => (
-                  <div key={message.id} className='text-break mb-2'>
-                    <b>{message.username}</b>: {message.body}{' '}
-                  </div>
-                ))}
+                messages
+                  .filter((message) => activeChannel.id === message.channelId)
+                  .map((message) => (
+                    <div key={message.id} className='text-break mb-2'>
+                      <b>{message.username}</b>: {message.body}{' '}
+                    </div>
+                  ))}
             </div>
             <div className='mt-auto px-5 py-3'>
               <Formik
@@ -157,7 +181,6 @@ const ChatPage = () => {
                     channelId: activeChannel.id,
                     username: authorizedUser,
                   });
-                  setMessagesCount(messagesCount + 1);
                   resetForm({ body: '' });
                 }}
               >

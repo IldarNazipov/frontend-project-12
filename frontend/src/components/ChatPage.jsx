@@ -1,14 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Container, Row, Col, Form, InputGroup, Nav } from 'react-bootstrap';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { getUserdata } from '../slices/userdataSlice.js';
+import { getUserdata, addMessage } from '../slices/userdataSlice.js';
+import { socket } from '../socket.js';
 import axios from 'axios';
 import routes from '../routes.js';
 import { Formik, Field } from 'formik';
 import * as yup from 'yup';
 import cn from 'classnames';
 import Spinner from './Spinner.jsx';
+import { AppContext } from './App.jsx';
 
 const getAuthHeader = () => {
   const lsItem = JSON.parse(localStorage.getItem('user'));
@@ -25,6 +27,7 @@ const ChatPage = () => {
   const [messagesCount, setMessagesCount] = useState(0);
   const [activeChannel, setActiveChannel] = useState({});
   const [loading, setLoading] = useState(true);
+  const { loggedIn } = useContext(AppContext);
   const dispatch = useDispatch();
   const inputRef = useRef();
 
@@ -53,7 +56,13 @@ const ChatPage = () => {
       setActiveChannel(currentChannel);
       setMessagesCount(messages.length);
     }
-  }, [messages, channels, currentChannelId]);
+  }, [channels]);
+
+  useEffect(() => {
+    socket.on('newMessage', (payload) => {
+      dispatch(addMessage(payload));
+    });
+  }, []);
 
   const getButtonClass = (id) => {
     const isActive = activeChannel.id === id;
@@ -61,7 +70,7 @@ const ChatPage = () => {
   };
 
   const messageSchema = yup.object().shape({
-    body: yup.string().required(),
+    body: yup.string().trim().required(),
   });
 
   return loading ? (
@@ -128,14 +137,27 @@ const ChatPage = () => {
               </p>
               <span className='text-muted'>{messagesCount} сообщений</span>
             </div>
-            <div
-              id='messages-box'
-              className='chat-messages overflow-auto px-5'
-            ></div>
+            <div id='messages-box' className='chat-messages overflow-auto px-5'>
+              {messages &&
+                messages.map((message) => (
+                  <div key={message.id} className='text-break mb-2'>
+                    <b>{message.username}</b>: {message.body}{' '}
+                  </div>
+                ))}
+            </div>
             <div className='mt-auto px-5 py-3'>
               <Formik
                 initialValues={{ body: '' }}
                 validationSchema={messageSchema}
+                onSubmit={(values, { resetForm }) => {
+                  socket.emit('newMessage', {
+                    body: values.body,
+                    channelId: activeChannel.id,
+                    username: loggedIn.username,
+                  });
+                  setMessagesCount(messagesCount + 1);
+                  resetForm({ body: '' });
+                }}
               >
                 {(props) => {
                   const { isValid, dirty, handleSubmit } = props;

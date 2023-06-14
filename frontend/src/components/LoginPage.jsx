@@ -16,19 +16,21 @@ import { useContext } from 'react';
 import axios from 'axios';
 import routes from '../routes.js';
 import { useNavigate } from 'react-router-dom';
-import { AppContext } from './App';
+import { AppContext } from './App.jsx';
+import { I18nContext } from 'react-i18next';
 
 const LoginPage = () => {
   const { logIn } = useContext(AppContext);
+  const { i18n } = useContext(I18nContext);
   const navigate = useNavigate();
 
   const loginSchema = yup.object().shape({
-    username: yup.string().required('Не может быть пустым'),
-    password: yup.string().required('Не может быть пустым'),
+    username: yup.string().trim().required(i18n.t('errors.required')),
+    password: yup.string().trim().required(i18n.t('errors.required')),
   });
 
-  const notify = () => {
-    toast.error('Ошибка соединения');
+  const notifyError = () => {
+    toast.error(i18n.t('errors.connection'));
   };
 
   return (
@@ -42,7 +44,11 @@ const LoginPage = () => {
                 md={6}
                 className='d-flex align-items-center justify-content-center'
               >
-                <Image roundedCircle src={Img} alt='Войти' />
+                <Image
+                  roundedCircle
+                  src={Img}
+                  alt={i18n.t('loginPage.logIn')}
+                />
               </Col>
               <Formik
                 initialValues={{ username: '', password: '' }}
@@ -59,13 +65,13 @@ const LoginPage = () => {
                     navigate('/');
                   } catch (error) {
                     if (error.message === 'Network Error') {
-                      notify();
+                      notifyError();
                       return;
                     }
                     if (error.isAxiosError && error.response.status === 401) {
                       setErrors({
                         username: '',
-                        password: 'Неверные имя пользователя или пароль',
+                        password: i18n.t('errors.invalid'),
                       });
                       return;
                     }
@@ -74,23 +80,25 @@ const LoginPage = () => {
                 }}
               >
                 {(props) => {
-                  const { touched, errors, handleSubmit } = props;
+                  const { touched, errors, isSubmitting, handleSubmit } = props;
                   return (
                     <Form
                       onSubmit={handleSubmit}
                       className='col-12 col-md-6 mt-3 mt-mb-0'
                     >
-                      <h1 className='text-center mb-4'>Войти</h1>
+                      <h1 className='text-center mb-4'>
+                        {i18n.t('loginPage.logIn')}
+                      </h1>
                       <FloatingLabel
                         controlId='username'
-                        label='Ваш ник'
+                        label={i18n.t('loginPage.usernameInput')}
                         className='mb-3'
                       >
                         <Field
                           autoFocus
                           name='username'
                           id='username'
-                          placeholder='Ваш ник'
+                          placeholder={i18n.t('loginPage.usernameInput')}
                           className={`form-control ${
                             (touched.username && errors.username) ||
                             errors.username === ''
@@ -106,14 +114,14 @@ const LoginPage = () => {
                       </FloatingLabel>
                       <FloatingLabel
                         controlId='password'
-                        label='Пароль'
+                        label={i18n.t('loginPage.passwordInput')}
                         className='mb-4'
                       >
                         <Field
                           type='password'
                           name='password'
                           id='password'
-                          placeholder='Пароль'
+                          placeholder={i18n.t('loginPage.passwordInput')}
                           className={`form-control ${
                             touched.password && errors.password
                               ? 'is-invalid'
@@ -127,11 +135,12 @@ const LoginPage = () => {
                         />
                       </FloatingLabel>
                       <Button
+                        disabled={isSubmitting}
                         variant='outline-primary'
                         type='submit'
                         className='w-100 mb-3'
                       >
-                        Войти
+                        {i18n.t('loginPage.logIn')}
                       </Button>
                     </Form>
                   );
@@ -140,8 +149,8 @@ const LoginPage = () => {
             </Card.Body>
             <Card.Footer className='p-4'>
               <div className='text-center'>
-                <span>Нет аккаунта? </span>
-                <a href='/signup'>Регистрация</a>
+                <span>{i18n.t('loginPage.noAccount')} </span>
+                <a href='/signup'>{i18n.t('signupPage.signUp')}</a>
               </div>
             </Card.Footer>
           </Card>

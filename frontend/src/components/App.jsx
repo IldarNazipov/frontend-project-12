@@ -1,9 +1,10 @@
 import { Route, Routes, BrowserRouter, Navigate } from 'react-router-dom';
-import { createContext, useState } from 'react';
+import { createContext, useState, Suspense } from 'react';
 import ErrorPage from './ErrorPage.jsx';
 import LoginPage from './LoginPage.jsx';
 import Layout from './Layout.jsx';
 import ChatPage from './ChatPage.jsx';
+import Spinner from './Spinner.jsx';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -22,14 +23,16 @@ const App = () => {
     <AppContext.Provider value={{ loggedIn, logOut, logIn, setLoggedIn }}>
       <BrowserRouter>
         <Layout>
-          <Routes>
-            <Route path='/login' element={<LoginPage />} />
-            <Route path='*' element={<ErrorPage />} />
-            <Route
-              path='/'
-              element={loggedIn ? <ChatPage /> : <Navigate to='/login' />}
-            />
-          </Routes>
+          <Suspense fallback={<Spinner />}>
+            <Routes>
+              <Route path='/login' element={<LoginPage />} />
+              <Route path='*' element={<ErrorPage />} />
+              <Route
+                path='/'
+                element={loggedIn ? <ChatPage /> : <Navigate to='/login' />}
+              />
+            </Routes>
+          </Suspense>
         </Layout>
         <ToastContainer />
       </BrowserRouter>

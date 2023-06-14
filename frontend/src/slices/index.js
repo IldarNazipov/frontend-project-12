@@ -1,8 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit';
-import userdataReducer from './userdataSlice.js';
+import chatReducer from './chatSlice.js';
 
 export default configureStore({
   reducer: {
-    userdata: userdataReducer,
+    chat: chatReducer,
   },
 });

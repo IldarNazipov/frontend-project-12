@@ -1,16 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Container, Row, Col, Form, InputGroup, Nav } from 'react-bootstrap';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { getUserdata } from '../slices/userdataSlice.js';
+import { getChatData } from '../slices/chatSlice.js';
 import { socket } from '../socket.js';
 import axios from 'axios';
+import { I18nContext } from 'react-i18next';
 import routes from '../routes.js';
 import { Formik, Field } from 'formik';
 import * as yup from 'yup';
 import { toast } from 'react-toastify';
-import cn from 'classnames';
 import Spinner from './Spinner.jsx';
+import getModal from './modals/index.js';
+import Channels from './Channels.jsx';
 
 const getAuthHeader = () => {
   const lsItem = JSON.parse(localStorage.getItem('user'));
@@ -22,22 +24,20 @@ const getAuthHeader = () => {
   return {};
 };
 
+const renderModal = ({ modalInfo, hideModal }) => {
+  if (!modalInfo.type) {
+    return null;
+  }
+
+  const Component = getModal(modalInfo.type);
+
+  return <Component modalInfo={modalInfo} onHide={hideModal} />;
+};
+
 const ChatPage = () => {
-  const userdata = useSelector((state) => state.userdata);
-  const [messagesCount, setMessagesCount] = useState(0);
-  const [activeChannel, setActiveChannel] = useState({});
-  const [loading, setLoading] = useState(true);
-  const dispatch = useDispatch();
-  const inputRef = useRef(null);
-  const messagesContainer = useRef(null);
-  const [authorizedUser, setAuthorizedUser] = useState('');
-  const { channels, currentChannelId, messages } = userdata.entities;
-
-  const notify = () => {
-    toast.error('Что-то пошло не так');
-  };
-
   useEffect(() => {
+    const authorizedUser = JSON.parse(localStorage.getItem('user')).username;
+    setAuthorizedUser(authorizedUser);
     const fetchData = async () => {
       const { data } = await axios({
         url: routes.dataPath(),
@@ -46,11 +46,7 @@ const ChatPage = () => {
       });
       if (data) {
         setLoading(false);
-        dispatch(getUserdata(data));
-        setTimeout(() => {
-          messagesContainer.current.scrollTop =
-            messagesContainer.current.scrollHeight;
-        }, 0);
+        dispatch(getChatData(data));
       }
     };
 
@@ -60,15 +56,36 @@ const ChatPage = () => {
       fetchData();
       setMessagesCount((prevCount) => prevCount + 1);
     });
+    socket.on('newChannel', () => {
+      fetchData();
+    });
+    socket.on('removeChannel', () => {
+      fetchData();
+    });
+    socket.on('renameChannel', () => {
+      fetchData();
+    });
 
     return () => {
       socket.off('newMessage', () => {
         fetchData();
         setMessagesCount((prevCount) => prevCount + 1);
       });
+      socket.off('newChannel', () => {
+        fetchData();
+      });
+      socket.off('removeChannel', () => {
+        fetchData();
+      });
+      socket.off('renameChannel', () => {
+        fetchData();
+      });
     };
   }, []);
-
+  const chatData = useSelector((state) => state.chat);
+  const { channels, currentChannelId, messages } = chatData.entities;
+  const [messagesCount, setMessagesCount] = useState(0);
+  const [activeChannel, setActiveChannel] = useState({});
   useEffect(() => {
     if (channels && currentChannelId) {
       const currentChannel = channels.find(
@@ -80,15 +97,24 @@ const ChatPage = () => {
         messages.filter((message) => message.channelId === currentChannelId)
           .length
       );
-
-      const authorizedUser = JSON.parse(localStorage.getItem('user')).username;
-      setAuthorizedUser(authorizedUser);
     }
   }, [currentChannelId]);
+  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const inputRef = useRef(null);
+  const [authorizedUser, setAuthorizedUser] = useState('');
+  const { i18n } = useContext(I18nContext);
+  const [modalInfo, setModalInfo] = useState({
+    type: null,
+    item: null,
+    items: null,
+  });
+  const hideModal = () => setModalInfo({ type: null, item: null, items: null });
+  const showModal = (type, item = null, items = null) =>
+    setModalInfo({ type, item, items });
 
-  const getButtonClass = (id) => {
-    const isActive = activeChannel.id === id;
-    return cn('w-100 rounded-0 text-start btn', { 'btn-secondary': isActive });
+  const notify = () => {
+    toast.error(i18n.t('errors.connection'));
   };
 
   const messageSchema = yup.object().shape({
@@ -106,10 +132,11 @@ const ChatPage = () => {
           className='border-end px-0 bg-light flex-column h-100 d-flex'
         >
           <div className='d-flex mt-1 justify-content-between mb-2 ps-4 pe-2 p-4'>
-            <b>Каналы</b>
+            <b>{i18n.t('chatPage.channels')}</b>
             <button
               type='button'
               className='p-0 text-primary btn btn-group-vertical'
+              onClick={() => showModal('adding', null, channels)}
             >
               <svg
                 xmlns='http://www.w3.org/2000/svg'
@@ -130,44 +157,31 @@ const ChatPage = () => {
             fill
             className='flex-column px-2 mb-3 overflow-auto h-100 d-block'
           >
-            {channels &&
-              channels.map((item) => (
-                <Nav.Item key={item.id} className='w-100'>
-                  <button
-                    onClick={() => {
-                      const currentChannel = channels.find(
-                        (channel) => item.id === channel.id
-                      );
-                      const activeMessages = messages.filter(
-                        (message) => message.channelId === currentChannel.id
-                      );
-                      setActiveChannel(currentChannel);
-                      setMessagesCount(activeMessages.length);
-                      inputRef.current.focus();
-                    }}
-                    type='button'
-                    className={getButtonClass(item.id)}
-                  >
-                    <span className='me-1'>#</span>
-                    {item.name}
-                  </button>
-                </Nav.Item>
-              ))}
+            {channels && (
+              <Channels
+                channels={channels}
+                activeChannel={activeChannel}
+                setActiveChannel={setActiveChannel}
+                currentChannelId={currentChannelId}
+                messages={messages}
+                setMessagesCount={setMessagesCount}
+                inputRef={inputRef}
+                showModal={showModal}
+              />
+            )}
           </Nav>
         </Col>
         <Col className='p-0 h-100'>
           <div className='d-flex flex-column h-100'>
             <div className='bg-light mb-4 p-3 shadow-sm small'>
               <p className='m-0'>
-                {activeChannel && <b># {activeChannel.name}</b>}
+                <b># {activeChannel.name}</b>
               </p>
-              <span className='text-muted'>{messagesCount} сообщений</span>
+              <span className='text-muted'>
+                {i18n.t('chatPage.messages', { count: messagesCount })}
+              </span>
             </div>
-            <div
-              id='messages-box'
-              ref={messagesContainer}
-              className='chat-messages overflow-auto px-5'
-            >
+            <div id='messages-box' className='chat-messages overflow-auto px-5'>
               {messages &&
                 messages
                   .filter((message) => activeChannel.id === message.channelId)
@@ -182,7 +196,7 @@ const ChatPage = () => {
                 initialValues={{ body: '' }}
                 validationSchema={messageSchema}
                 onSubmit={(values, { resetForm, setSubmitting }) => {
-                  socket.timeout(5000).emit(
+                  socket.timeout(3000).emit(
                     'newMessage',
                     {
                       body: values.body,
@@ -190,12 +204,13 @@ const ChatPage = () => {
                       username: authorizedUser,
                     },
                     (err, response) => {
-                      if (response?.status) {
+                      if (response?.status === 'ok') {
                         setSubmitting(false);
                         resetForm({ body: '' });
                       } else {
                         setSubmitting(false);
                         notify();
+                        console.error(err);
                       }
                     }
                   );
@@ -214,11 +229,9 @@ const ChatPage = () => {
                         <Field
                           disabled={isSubmitting}
                           autoFocus
-                          innerRef={(f) => {
-                            inputRef.current = f;
-                          }}
+                          innerRef={(f) => (inputRef.current = f)}
                           name='body'
-                          placeholder='Введите сообщение...'
+                          placeholder={i18n.t('chatPage.inputMessage')}
                           className='border-0 p-0 ps-2 form-control'
                         />
                         <button
@@ -239,7 +252,9 @@ const ChatPage = () => {
                               d='M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm4.5 5.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z'
                             ></path>
                           </svg>
-                          <span className='visually-hidden'>Отправить</span>
+                          <span className='visually-hidden'>
+                            {i18n.t('chatPage.send')}
+                          </span>
                         </button>
                       </InputGroup>
                     </Form>
@@ -250,6 +265,7 @@ const ChatPage = () => {
           </div>
         </Col>
       </Row>
+      {renderModal({ modalInfo, hideModal })}
     </Container>
   );
 };

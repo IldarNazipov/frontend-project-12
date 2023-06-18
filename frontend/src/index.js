@@ -3,15 +3,27 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import { io } from 'socket.io-client';
 import init from './init.js';
+import { Provider, ErrorBoundary } from '@rollbar/react';
 
 export const socket = io();
+
+const rollbarConfig = {
+  accessToken: '7ca276920bc140f69cc97995d68e751f',
+  environment: 'production',
+};
 
 const app = async () => {
   const container = document.getElementById('root');
   const root = createRoot(container);
   const vdom = await init(socket);
 
-  root.render(<React.StrictMode>{vdom}</React.StrictMode>);
+  root.render(
+    <React.StrictMode>
+      <Provider config={rollbarConfig}>
+        <ErrorBoundary>{vdom}</ErrorBoundary>
+      </Provider>
+    </React.StrictMode>
+  );
 };
 
 app();

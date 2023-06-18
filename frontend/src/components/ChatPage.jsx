@@ -61,7 +61,9 @@ const ChatPage = () => {
     };
 
     fetchData();
-  }, [dispatch]);
+  }, []);
+
+  useEffect(() => {});
 
   return loading ? (
     <Spinner />

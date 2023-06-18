@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { actions as channelsActions } from '../../slices/channelsSlice.js';
 import { Modal, Button } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { socket } from '../../index.js';
@@ -8,10 +6,6 @@ import { toast } from 'react-toastify';
 
 const Remove = ({ modalInfo, onHide }) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-  const currentChannelId = useSelector(
-    (state) => state.channelsInfo.currentChannelId
-  );
   const [isSubmitting, setSubmitting] = useState(false);
   const { item } = modalInfo;
 
@@ -28,8 +22,6 @@ const Remove = ({ modalInfo, onHide }) => {
       .timeout(3000)
       .emit('removeChannel', { id: item.id }, (err, response) => {
         if (response?.status === 'ok') {
-          currentChannelId === item.id &&
-            dispatch(channelsActions.setCurrentChannelId(1));
           notifySuccess();
           onHide();
         } else {

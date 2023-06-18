@@ -43,7 +43,7 @@ const ru = {
       send: 'Отправить',
     },
     channelAdded: 'Канал создан',
-    channelRemoved: 'Канал удален',
+    channelRemoved: 'Канал удалён',
     channelRenamed: 'Канал переименован',
     logOut: 'Выйти',
     loading: 'Загрузка...',

@@ -29,10 +29,11 @@ const Messages = () => {
     animateScroll.scrollToBottom({
       containerId: 'messages-box',
       delay: 0,
-      duration: 0,
+      duration: 300,
+      smooth: true,
     });
     setMessagesCount(currentChannelMessages.length);
-  }, [currentChannelMessages.length]);
+  }, [currentChannelMessages.length, currentChannel, setMessagesCount]);
 
   const notifyError = () => {
     toast.error(t('errors.connection'));

@@ -9,8 +9,8 @@ import { toast } from 'react-toastify';
 const Remove = ({ modalInfo, onHide }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const currentChannelName = useSelector(
-    (state) => state.channelsInfo.currentChannelName
+  const currentChannelId = useSelector(
+    (state) => state.channelsInfo.currentChannelId
   );
   const [isSubmitting, setSubmitting] = useState(false);
   const { item } = modalInfo;
@@ -28,8 +28,8 @@ const Remove = ({ modalInfo, onHide }) => {
       .timeout(3000)
       .emit('removeChannel', { id: item.id }, (err, response) => {
         if (response?.status === 'ok') {
-          currentChannelName === item.name &&
-            dispatch(channelsActions.setCurrentChannelName('general'));
+          currentChannelId === item.id &&
+            dispatch(channelsActions.setCurrentChannelId(1));
           notifySuccess();
           onHide();
         } else {

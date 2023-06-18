@@ -50,12 +50,9 @@ const ChatPage = () => {
       if (data) {
         setLoading(false);
         const { channels, messages, currentChannelId } = data;
-        const defaultChannel = channels.find(
-          (item) => currentChannelId === item.id
-        );
         dispatch(channelsActions.addChannels(channels));
         dispatch(messagesActions.addMessages(messages));
-        dispatch(channelsActions.setCurrentChannelName(defaultChannel.name));
+        dispatch(channelsActions.setCurrentChannelId(currentChannelId));
         const defaultMessagesCount = data.messages.filter(
           (item) => item.channelId === currentChannelId
         ).length;
@@ -64,7 +61,7 @@ const ChatPage = () => {
     };
 
     fetchData();
-  }, []);
+  }, [dispatch]);
 
   return loading ? (
     <Spinner />

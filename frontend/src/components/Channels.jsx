@@ -1,7 +1,8 @@
 import { Nav, Button, ButtonGroup, Dropdown, Col } from 'react-bootstrap';
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
+import { animateScroll } from 'react-scroll';
 import { actions as channelsActions } from '../slices/channelsSlice.js';
 import { ChatContext } from './ChatPage.jsx';
 
@@ -9,19 +10,35 @@ const Channels = ({ showModal }) => {
   const { t } = useTranslation();
   const { setMessagesCount, inputRef } = useContext(ChatContext);
   const dispatch = useDispatch();
-
-  const channels = useSelector((state) => state.channelsInfo.channels);
-  const messages = useSelector((state) => state.messagesInfo.messages);
-  const currentChannelName = useSelector(
-    (state) => state.channelsInfo.currentChannelName
+  const { channels, currentChannelId } = useSelector(
+    (state) => state.channelsInfo
   );
-  const isActive = (name) => name === currentChannelName;
-  const handleClick = (name) => {
-    const targetChannel = channels.find((channel) => name === channel.name);
+  const lastChannelsItemId = channels.at(-1).id;
+
+  useEffect(() => {
+    if (currentChannelId === 1) {
+      animateScroll.scrollToTop({
+        containerId: 'channels-box',
+        delay: 0,
+        duration: 0,
+      });
+    }
+    if (currentChannelId === lastChannelsItemId) {
+      animateScroll.scrollToBottom({
+        containerId: 'channels-box',
+        delay: 0,
+        duration: 0,
+      });
+    }
+  }, [currentChannelId, lastChannelsItemId]);
+  const messages = useSelector((state) => state.messagesInfo.messages);
+  const isActive = (id) => id === currentChannelId;
+  const handleClick = (id) => {
+    const targetChannel = channels.find((channel) => id === channel.id);
     const activeMessages = messages.filter(
       (message) => message.channelId === targetChannel.id
     );
-    dispatch(channelsActions.setCurrentChannelName(targetChannel.name));
+    dispatch(channelsActions.setCurrentChannelId(targetChannel.id));
     setMessagesCount(activeMessages.length);
     inputRef.current.focus();
   };
@@ -67,9 +84,9 @@ const Channels = ({ showModal }) => {
                     type='button'
                     variant=''
                     className={`w-100 rounded-0 text-start text-truncate${
-                      isActive(item.name) ? ' btn-secondary' : ''
+                      isActive(item.id) ? ' btn-secondary' : ''
                     }`}
-                    onClick={() => handleClick(item.name)}
+                    onClick={() => handleClick(item.id)}
                   >
                     <span className='me-1'>#</span>
                     {item.name}
@@ -78,7 +95,7 @@ const Channels = ({ showModal }) => {
                     split
                     variant=''
                     className={`flex-grow-0${
-                      isActive(item.name) ? ' btn-secondary' : ''
+                      isActive(item.id) ? ' btn-secondary' : ''
                     }`}
                   />
                   <Dropdown.Menu>
@@ -95,9 +112,9 @@ const Channels = ({ showModal }) => {
                   type='button'
                   variant=''
                   className={`w-100 rounded-0 text-start${
-                    isActive(item.name) ? ' btn-secondary' : ''
+                    isActive(item.id) ? ' btn-secondary' : ''
                   }`}
-                  onClick={() => handleClick(item.name)}
+                  onClick={() => handleClick(item.id)}
                 >
                   <span className='me-1'>#</span>
                   {item.name}

@@ -1,18 +1,29 @@
 import { createSlice } from '@reduxjs/toolkit';
 import remove from 'lodash.remove';
+import filter from 'leo-profanity';
 
 const channelsSlice = createSlice({
   name: 'channels',
   initialState: { channels: [] },
   reducers: {
-    setCurrentChannelName(state, { payload }) {
-      state.currentChannelName = payload;
+    setCurrentChannelId(state, { payload }) {
+      state.currentChannelId = payload;
     },
     addChannel(state, { payload }) {
-      state.channels.push(payload);
+      const cleanedText = filter.clean(payload.name);
+      const cleanedPayload = { ...payload, name: cleanedText };
+      state.channels.push(cleanedPayload);
     },
     addChannels(state, { payload }) {
-      state.channels = payload;
+      if (payload.length > 0) {
+        const cleanedPayload = payload.map((channel) => {
+          const cleanedText = filter.clean(channel.name);
+          return { ...channel, name: cleanedText };
+        });
+        state.channels = cleanedPayload;
+      } else {
+        state.channels = payload;
+      }
     },
     removeChannel(state, { payload }) {
       const { channelId } = payload;
@@ -21,7 +32,8 @@ const channelsSlice = createSlice({
     renameChannel(state, { payload }) {
       const { channelId, channelName } = payload;
       const channel = state.channels.find(({ id }) => id === channelId);
-      channel.name = channelName;
+      const cleanedName = filter.clean(channelName);
+      channel.name = cleanedName;
     },
   },
 });

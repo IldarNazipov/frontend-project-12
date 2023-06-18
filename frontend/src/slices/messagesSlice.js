@@ -1,16 +1,27 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { actions as channelsActions } from './channelsSlice.js';
 import remove from 'lodash.remove';
+import filter from 'leo-profanity';
 
 const messagesSlice = createSlice({
   name: 'messages',
   initialState: { messages: [] },
   reducers: {
     addMessages(state, { payload }) {
-      state.messages = payload;
+      if (payload.length > 0) {
+        const cleanedPayload = payload.map((message) => {
+          const cleanedText = filter.clean(message.body);
+          return { ...message, body: cleanedText };
+        });
+        state.messages = cleanedPayload;
+      } else {
+        state.messages = payload;
+      }
     },
     addMessage(state, { payload }) {
-      state.messages.push(payload);
+      const cleanedText = filter.clean(payload.body);
+      const cleanedPayload = { ...payload, body: cleanedText };
+      state.messages.push(cleanedPayload);
     },
   },
   extraReducers: (builder) => {

@@ -1,4 +1,4 @@
-import { useRef, useContext } from 'react';
+import { useRef, useContext, useEffect } from 'react';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { Formik, Field, ErrorMessage } from 'formik';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,10 @@ const Add = ({ onHide }) => {
   const channels = useSelector((state) => state.channelsInfo.channels);
   const channelNames = channels.map((item) => item.name);
   const inputRef = useRef();
+
+  useEffect(() => {
+    inputRef.current.focus();
+  });
 
   const addSchema = yup.object().shape({
     name: yup
@@ -50,11 +54,9 @@ const Add = ({ onHide }) => {
                 if (response?.status === 'ok') {
                   setSubmitting(false);
                   setMessagesCount(0);
-                  setTimeout(() => {
-                    dispatch(
-                      channelsActions.setCurrentChannelName(values.name)
-                    );
-                  }, 0);
+                  dispatch(
+                    channelsActions.setCurrentChannelId(response.data.id)
+                  );
                   notifySuccess();
                   onHide();
                 } else {
@@ -77,7 +79,6 @@ const Add = ({ onHide }) => {
                 <div>
                   <Field
                     innerRef={(f) => (inputRef.current = f)}
-                    autoFocus
                     disabled={isSubmitting}
                     name='name'
                     id='name'

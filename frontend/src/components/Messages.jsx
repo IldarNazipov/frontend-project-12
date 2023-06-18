@@ -1,7 +1,9 @@
-import { useContext } from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useContext, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { socket } from '../index.js';
 import { useTranslation } from 'react-i18next';
+import { animateScroll } from 'react-scroll';
 import { Button, InputGroup, Form, Col } from 'react-bootstrap';
 import { Formik, Field } from 'formik';
 import { toast } from 'react-toastify';
@@ -13,13 +15,24 @@ const Messages = () => {
   const { inputRef, messagesCount, setMessagesCount } = useContext(ChatContext);
   const messages = useSelector((state) => state.messagesInfo.messages);
   const channels = useSelector((state) => state.channelsInfo.channels);
-  const currentChannelName = useSelector(
-    (state) => state.channelsInfo.currentChannelName
+  const currentChannelId = useSelector(
+    (state) => state.channelsInfo.currentChannelId
   );
   const currentChannel = channels.find(
-    (item) => item.name === currentChannelName
+    (channel) => channel.id === currentChannelId
+  );
+  const currentChannelMessages = messages.filter(
+    (message) => message.channelId === currentChannelId
   );
   const authorizedUser = JSON.parse(localStorage.getItem('user')).username;
+  useEffect(() => {
+    animateScroll.scrollToBottom({
+      containerId: 'messages-box',
+      delay: 0,
+      duration: 0,
+    });
+    setMessagesCount(currentChannelMessages.length);
+  }, [currentChannelMessages.length]);
 
   const notifyError = () => {
     toast.error(t('errors.connection'));
@@ -34,7 +47,7 @@ const Messages = () => {
       <div className='d-flex flex-column h-100'>
         <div className='bg-light mb-4 p-3 shadow-sm small'>
           <p className='m-0'>
-            <b># {currentChannelName}</b>
+            <b># {currentChannel?.name}</b>
           </p>
           <span className='text-muted'>
             {t('chatPage.messages', { count: messagesCount })}
@@ -65,11 +78,17 @@ const Messages = () => {
                 (err, response) => {
                   if (response?.status === 'ok') {
                     setSubmitting(false);
-                    setMessagesCount((prevState) => (prevState += 1));
+                    setMessagesCount(messagesCount + 1);
                     resetForm({ body: '' });
+                    setTimeout(() => {
+                      inputRef.current.focus();
+                    }, 0);
                   } else {
                     setSubmitting(false);
                     notifyError();
+                    setTimeout(() => {
+                      inputRef.current.select();
+                    }, 0);
                     console.error(err);
                   }
                 }

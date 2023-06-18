@@ -8,26 +8,36 @@ import {
   Form,
   Button,
 } from 'react-bootstrap';
-import Img from '../assets/avatar.jpg';
+import Img from '../assets/avatar_1.jpg';
 import { Formik, Field, ErrorMessage } from 'formik';
 import { toast } from 'react-toastify';
 import * as yup from 'yup';
 import { useContext } from 'react';
-import { Link } from 'react-router-dom';
 import axios from 'axios';
 import routes from '../routes.js';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from './App.jsx';
 import { useTranslation } from 'react-i18next';
 
-const LoginPage = () => {
+const SignupPage = () => {
   const { logIn } = useContext(AppContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const loginSchema = yup.object().shape({
-    username: yup.string().trim().required(t('errors.required')),
-    password: yup.string().trim().required(t('errors.required')),
+  const signupSchema = yup.object().shape({
+    username: yup
+      .string()
+      .trim()
+      .required(t('errors.required'))
+      .min(3, t('errors.minMax'))
+      .max(20, t('errors.minMax')),
+    password: yup
+      .string()
+      .required(t('errors.required'))
+      .min(6, t('errors.lessThanSix')),
+    confirmPassword: yup
+      .string()
+      .oneOf([yup.ref('password'), null], t('errors.mustMatch')),
   });
 
   const notifyConnectionError = () => {
@@ -43,23 +53,23 @@ const LoginPage = () => {
       <Row className='justify-content-center align-content-center h-100'>
         <Col xs={12} md={8} xxl={6}>
           <Card className='shadow-sm'>
-            <Card.Body className='row p-5'>
-              <Col
-                xs={12}
-                md={6}
-                className='d-flex align-items-center justify-content-center'
-              >
-                <Image roundedCircle src={Img} alt={t('loginPage.logIn')} />
-              </Col>
+            <Card.Body className='d-flex flex-column flex-md-row justify-content-around align-items-center p-5'>
+              <div>
+                <Image roundedCircle src={Img} alt={t('signupPage.signUp')} />
+              </div>
               <Formik
-                initialValues={{ username: '', password: '' }}
-                validationSchema={loginSchema}
+                initialValues={{
+                  username: '',
+                  password: '',
+                  passwordConfirmation: '',
+                }}
+                validationSchema={signupSchema}
                 onSubmit={async (values, { setErrors }) => {
                   try {
-                    const response = await axios.post(
-                      routes.loginPath(),
-                      values
-                    );
+                    const response = await axios.post(routes.signupPath(), {
+                      username: values.username,
+                      password: values.password,
+                    });
                     const data = JSON.stringify(response.data);
                     localStorage.setItem('user', data);
                     logIn();
@@ -69,10 +79,11 @@ const LoginPage = () => {
                       notifyConnectionError();
                       return;
                     }
-                    if (error.isAxiosError && error.response.status === 401) {
+                    if (error.isAxiosError && error.response.status === 409) {
                       setErrors({
                         username: '',
-                        password: t('errors.invalid'),
+                        password: '',
+                        confirmPassword: t('errors.alreadyExists'),
                       });
                       return;
                     }
@@ -86,23 +97,20 @@ const LoginPage = () => {
                 {(props) => {
                   const { touched, errors, isSubmitting, handleSubmit } = props;
                   return (
-                    <Form
-                      onSubmit={handleSubmit}
-                      className='col-12 col-md-6 mt-3 mt-mb-0'
-                    >
+                    <Form onSubmit={handleSubmit} className='w-50'>
                       <h1 className='text-center mb-4'>
-                        {t('loginPage.logIn')}
+                        {t('signupPage.signUp')}
                       </h1>
                       <FloatingLabel
                         controlId='username'
-                        label={t('loginPage.usernameInput')}
+                        label={t('signupPage.usernameInput')}
                         className='mb-3'
                       >
                         <Field
                           autoFocus
                           name='username'
                           id='username'
-                          placeholder={t('loginPage.usernameInput')}
+                          placeholder={t('signupPage.usernameInput')}
                           className={`form-control ${
                             (touched.username && errors.username) ||
                             errors.username === ''
@@ -118,16 +126,17 @@ const LoginPage = () => {
                       </FloatingLabel>
                       <FloatingLabel
                         controlId='password'
-                        label={t('loginPage.passwordInput')}
-                        className='mb-4'
+                        label={t('signupPage.passwordInput')}
+                        className='mb-3'
                       >
                         <Field
                           type='password'
                           name='password'
                           id='password'
-                          placeholder={t('loginPage.passwordInput')}
+                          placeholder={t('signupPage.passwordInput')}
                           className={`form-control ${
-                            touched.password && errors.password
+                            (touched.password && errors.password) ||
+                            errors.password === ''
                               ? 'is-invalid'
                               : ''
                           }`}
@@ -138,25 +147,43 @@ const LoginPage = () => {
                           className='invalid-tooltip'
                         />
                       </FloatingLabel>
+                      <FloatingLabel
+                        controlId='confirmPassword'
+                        label={t('signupPage.passwordConfirmationInput')}
+                        className='mb-4'
+                      >
+                        <Field
+                          type='password'
+                          name='confirmPassword'
+                          id='confirmPassword'
+                          placeholder={t(
+                            'signupPage.passwordConfirmationInput'
+                          )}
+                          className={`form-control ${
+                            touched.password && errors.confirmPassword
+                              ? 'is-invalid'
+                              : ''
+                          }`}
+                        />
+                        <ErrorMessage
+                          component='div'
+                          name='confirmPassword'
+                          className='invalid-tooltip'
+                        />
+                      </FloatingLabel>
                       <Button
                         disabled={isSubmitting}
                         variant='outline-primary'
                         type='submit'
                         className='w-100 mb-3'
                       >
-                        {t('loginPage.logIn')}
+                        {t('signupPage.signUpButton')}
                       </Button>
                     </Form>
                   );
                 }}
               </Formik>
             </Card.Body>
-            <Card.Footer className='p-4'>
-              <div className='text-center'>
-                <span>{t('loginPage.noAccount')} </span>
-                <Link to='/signup'>{t('signupPage.signUp')}</Link>
-              </div>
-            </Card.Footer>
           </Card>
         </Col>
       </Row>
@@ -164,4 +191,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default SignupPage;

@@ -7,6 +7,9 @@ const ru = {
       404: 'Страница не найдена',
       invalid: 'Неверные имя пользователя или пароль',
       minMax: 'От 3 до 20 символов',
+      lessThanSix: 'Не менее 6 символов',
+      mustMatch: 'Пароли должны совпадать',
+      alreadyExists: 'Такой пользователь уже существует',
       unique: 'Должно быть уникальным',
     },
     loginPage: {
@@ -17,6 +20,10 @@ const ru = {
     },
     signupPage: {
       signUp: 'Регистрация',
+      signUpButton: 'Зарегистрироваться',
+      usernameInput: 'Имя пользователя',
+      passwordInput: 'Пароль',
+      passwordConfirmationInput: 'Подтвердите пароль',
     },
     chatPage: {
       channels: 'Каналы',

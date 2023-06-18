@@ -6,6 +6,7 @@ import Layout from './Layout.jsx';
 import ChatPage from './ChatPage.jsx';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import SignupPage from './SignupPage.jsx';
 
 const checkAuth = () => {
   const lsItem = JSON.parse(localStorage.getItem('user'));
@@ -34,6 +35,7 @@ const App = () => {
               path='/'
               element={loggedIn ? <ChatPage /> : <Navigate to='/login' />}
             />
+            <Route path='/signup' element={<SignupPage />} />
           </Routes>
         </Layout>
         <ToastContainer />

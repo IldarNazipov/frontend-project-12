@@ -1,52 +1,61 @@
-import { useContext, useRef } from 'react';
+import { useRef, useContext } from 'react';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { Formik, Field, ErrorMessage } from 'formik';
-import { I18nContext } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
+import { actions as channelsActions } from '../../slices/channelsSlice.js';
 import * as yup from 'yup';
-import { socket } from '../../socket.js';
+import { socket } from '../../index.js';
 import { toast } from 'react-toastify';
+import { ChatContext } from '../ChatPage.jsx';
 
-const Add = ({ modalInfo, onHide }) => {
-  const { i18n } = useContext(I18nContext);
-  const inputRef = useRef(null);
-  const { items } = modalInfo;
-  const channelNames = items.map((item) => item.name);
+const Add = ({ onHide }) => {
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const { setMessagesCount } = useContext(ChatContext);
+  const channels = useSelector((state) => state.channelsInfo.channels);
+  const channelNames = channels.map((item) => item.name);
+  const inputRef = useRef();
 
   const addSchema = yup.object().shape({
     name: yup
       .string()
       .trim()
-      .min(3, i18n.t('errors.minMax'))
-      .max(20, i18n.t('errors.minMax'))
-      .required(i18n.t('errors.required'))
-      .notOneOf(channelNames, i18n.t('errors.unique')),
+      .min(3, t('errors.minMax'))
+      .max(20, t('errors.minMax'))
+      .required(t('errors.required'))
+      .notOneOf(channelNames, t('errors.unique')),
   });
 
   const notifyError = () => {
-    toast.error(i18n.t('errors.connection'));
+    toast.error(t('errors.connection'));
   };
   const notifySuccess = () => {
-    toast.success(i18n.t('channelAdded'));
+    toast.success(t('channelAdded'));
   };
 
   return (
     <Modal show onHide={onHide} centered>
       <Modal.Header closeButton>
-        <Modal.Title>{i18n.t('chatPage.addChannel')}</Modal.Title>
+        <Modal.Title>{t('chatPage.addChannel')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Formik
           initialValues={{ name: '' }}
           validationSchema={addSchema}
-          onSubmit={(values, { resetForm, setSubmitting }) => {
+          onSubmit={(values, { setSubmitting }) => {
             socket
-              .timeout(3000)
+              .timeout(5000)
               .emit('newChannel', { name: values.name }, (err, response) => {
                 if (response?.status === 'ok') {
-                  console.log(channelNames);
                   setSubmitting(false);
+                  setMessagesCount(0);
+                  setTimeout(() => {
+                    dispatch(
+                      channelsActions.setCurrentChannelName(values.name)
+                    );
+                  }, 0);
                   notifySuccess();
-                  resetForm({ body: '' });
                   onHide();
                 } else {
                   setSubmitting(false);
@@ -77,7 +86,7 @@ const Add = ({ modalInfo, onHide }) => {
                     }`}
                   />
                   <Form.Label className='visually-hidden' htmlFor='name'>
-                    {i18n.t('chatPage.channelName')}
+                    {t('chatPage.channelName')}
                   </Form.Label>
                   <ErrorMessage
                     component='div'
@@ -91,14 +100,14 @@ const Add = ({ modalInfo, onHide }) => {
                       variant='secondary'
                       className='me-2'
                     >
-                      {i18n.t('chatPage.cancel')}
+                      {t('chatPage.cancel')}
                     </Button>
                     <Button
                       disabled={isSubmitting}
                       type='submit'
                       variant='primary'
                     >
-                      {i18n.t('chatPage.send')}
+                      {t('chatPage.send')}
                     </Button>
                   </div>
                 </div>

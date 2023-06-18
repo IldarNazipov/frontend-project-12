@@ -1,8 +1,10 @@
-import i18n from 'i18next';
+import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import resources from '../src/locales/index.js';
 
-i18n.use(initReactI18next).init({
+const i18n = i18next.createInstance();
+
+await i18n.use(initReactI18next).init({
   fallbackLng: 'ru',
   debug: true,
   resources,

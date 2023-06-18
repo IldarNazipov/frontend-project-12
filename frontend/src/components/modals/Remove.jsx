@@ -1,19 +1,25 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { actions as channelsActions } from '../../slices/channelsSlice.js';
 import { Modal, Button } from 'react-bootstrap';
-import { I18nContext } from 'react-i18next';
-import { socket } from '../../socket.js';
+import { useTranslation } from 'react-i18next';
+import { socket } from '../../index.js';
 import { toast } from 'react-toastify';
 
 const Remove = ({ modalInfo, onHide }) => {
-  const { i18n } = useContext(I18nContext);
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const currentChannelName = useSelector(
+    (state) => state.channelsInfo.currentChannelName
+  );
   const [isSubmitting, setSubmitting] = useState(false);
   const { item } = modalInfo;
 
   const notifyError = () => {
-    toast.error(i18n.t('errors.connection'));
+    toast.error(t('errors.connection'));
   };
   const notifySuccess = () => {
-    toast.success(i18n.t('channelRemoved'));
+    toast.success(t('channelRemoved'));
   };
 
   const handleClick = () => {
@@ -22,11 +28,13 @@ const Remove = ({ modalInfo, onHide }) => {
       .timeout(3000)
       .emit('removeChannel', { id: item.id }, (err, response) => {
         if (response?.status === 'ok') {
+          currentChannelName === item.name &&
+            dispatch(channelsActions.setCurrentChannelName('general'));
           notifySuccess();
           onHide();
         } else {
-          notifyError();
           setSubmitting(false);
+          notifyError();
           console.error(err);
         }
       });
@@ -35,10 +43,10 @@ const Remove = ({ modalInfo, onHide }) => {
   return (
     <Modal show onHide={onHide} centered>
       <Modal.Header closeButton>
-        <Modal.Title>{i18n.t('chatPage.removeChannel')}</Modal.Title>
+        <Modal.Title>{t('chatPage.removeChannel')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <p className='lead'>{i18n.t('chatPage.sure')}</p>
+        <p className='lead'>{t('chatPage.sure')}</p>
         <div className='d-flex justify-content-end'>
           <Button
             onClick={onHide}
@@ -46,7 +54,7 @@ const Remove = ({ modalInfo, onHide }) => {
             variant='secondary'
             className='me-2'
           >
-            {i18n.t('chatPage.cancel')}
+            {t('chatPage.cancel')}
           </Button>
           <Button
             type='button'
@@ -54,7 +62,7 @@ const Remove = ({ modalInfo, onHide }) => {
             disabled={isSubmitting}
             onClick={handleClick}
           >
-            {i18n.t('chatPage.remove')}
+            {t('chatPage.remove')}
           </Button>
         </div>
       </Modal.Body>

@@ -2,14 +2,14 @@ import { useContext } from 'react';
 import Image from 'react-bootstrap/Image';
 import ErrorImg from '../assets/error.svg';
 import { Link } from 'react-router-dom';
-import { Trans, I18nContext } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 
 const ErrorPage = () => {
-  const { i18n } = useContext(I18nContext);
+  const { t } = useTranslation();
   return (
     <div className='text-center'>
-      <Image alt={i18n.t('errors.404')} fluid className='h-25' src={ErrorImg} />
-      <h1 className='h4 text-muted'>{i18n.t('errors.404')}</h1>
+      <Image alt={t('errors.404')} fluid className='h-25' src={ErrorImg} />
+      <h1 className='h4 text-muted'>{t('errors.404')}</h1>
       <Trans
         components={{
           tx: <p className='text-muted' />,

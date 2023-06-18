@@ -98,7 +98,9 @@ const Channels = ({ showModal }) => {
                     className={`flex-grow-0${
                       isActive(item.id) ? ' btn-secondary' : ''
                     }`}
-                  />
+                  >
+                    <span className='visually-hidden'>Управление каналом</span>
+                  </Dropdown.Toggle>
                   <Dropdown.Menu>
                     <Dropdown.Item onClick={() => showModal('removing', item)}>
                       {t('chatPage.remove')}

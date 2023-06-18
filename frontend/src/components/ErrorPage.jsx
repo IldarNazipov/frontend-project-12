@@ -1,4 +1,3 @@
-import { useContext } from 'react';
 import Image from 'react-bootstrap/Image';
 import ErrorImg from '../assets/error.svg';
 import { Link } from 'react-router-dom';

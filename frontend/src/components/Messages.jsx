@@ -113,6 +113,7 @@ const Messages = () => {
                       name='body'
                       placeholder={t('chatPage.inputMessage')}
                       className='border-0 p-0 ps-2 form-control'
+                      aria-label={t('chatPage.newMessage')}
                     />
                     <Button
                       type='submit'

@@ -13,7 +13,9 @@ const Channels = ({ showModal }) => {
   const { channels, currentChannelId } = useSelector(
     (state) => state.channelsInfo
   );
+  const messages = useSelector((state) => state.messagesInfo.messages);
   const lastChannelsItemId = channels.at(-1).id;
+  const isActive = (id) => id === currentChannelId;
 
   useEffect(() => {
     if (currentChannelId === 1) {
@@ -31,8 +33,7 @@ const Channels = ({ showModal }) => {
       });
     }
   }, [currentChannelId, lastChannelsItemId]);
-  const messages = useSelector((state) => state.messagesInfo.messages);
-  const isActive = (id) => id === currentChannelId;
+
   const handleClick = (id) => {
     const targetChannel = channels.find((channel) => id === channel.id);
     const activeMessages = messages.filter(

@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { actions as channelsActions } from './channelsSlice.js';
 import remove from 'lodash.remove';
 import filter from 'leo-profanity';
+import { actions as channelsActions } from './channelsSlice.js';
 
 const messagesSlice = createSlice({
   name: 'messages',

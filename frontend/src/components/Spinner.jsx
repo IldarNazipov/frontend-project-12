@@ -4,9 +4,9 @@ const Spinner = () => {
   const { t } = useTranslation();
 
   return (
-    <div className='h-100 d-flex justify-content-center align-items-center'>
-      <div role='status' className='spinner-border text-primary'>
-        <span className='visually-hidden'>{t('loading')}</span>
+    <div className="h-100 d-flex justify-content-center align-items-center">
+      <div role="status" className="spinner-border text-primary">
+        <span className="visually-hidden">{t('loading')}</span>
       </div>
     </div>
   );

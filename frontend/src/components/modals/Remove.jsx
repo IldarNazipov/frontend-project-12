@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import { socket } from '../../index.js';
 import { toast } from 'react-toastify';
+import { socket } from '../../index.js';
 
 const Remove = ({ modalInfo, onHide }) => {
   const { t } = useTranslation();
@@ -38,19 +38,19 @@ const Remove = ({ modalInfo, onHide }) => {
         <Modal.Title>{t('chatPage.removeChannel')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <p className='lead'>{t('chatPage.sure')}</p>
-        <div className='d-flex justify-content-end'>
+        <p className="lead">{t('chatPage.sure')}</p>
+        <div className="d-flex justify-content-end">
           <Button
             onClick={onHide}
-            type='button'
-            variant='secondary'
-            className='me-2'
+            type="button"
+            variant="secondary"
+            className="me-2"
           >
             {t('chatPage.cancel')}
           </Button>
           <Button
-            type='button'
-            variant='danger'
+            type="button"
+            variant="danger"
             disabled={isSubmitting}
             onClick={handleClick}
           >

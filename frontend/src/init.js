@@ -1,12 +1,11 @@
-/* eslint-disable import/no-anonymous-default-export */
 import { Provider } from 'react-redux';
-import store from '../src/slices/index.js';
-import { actions as channelsActions } from '../src/slices/channelsSlice.js';
-import { actions as messagesActions } from '../src/slices/messagesSlice.js';
 import { I18nextProvider } from 'react-i18next';
+import filter from 'leo-profanity';
+import store from './slices/index.js';
+import { actions as channelsActions } from './slices/channelsSlice.js';
+import { actions as messagesActions } from './slices/messagesSlice.js';
 import App from './components/App.jsx';
 import initiateI18n from './i18n.js';
-import filter from 'leo-profanity';
 
 export default async (socket) => {
   const ruWords = filter.getDictionary('ru');
@@ -26,7 +25,7 @@ export default async (socket) => {
       channelsActions.renameChannel({
         channelId: payload.id,
         channelName: payload.name,
-      })
+      }),
     );
   });
 

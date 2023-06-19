@@ -1,6 +1,6 @@
 import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import resources from '../src/locales/index.js';
+import resources from './locales/index.js';
 
 const initiateI18n = async () => {
   const i18n = i18next.createInstance();

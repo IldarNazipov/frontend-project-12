@@ -8,17 +8,16 @@ import {
   Form,
   Button,
 } from 'react-bootstrap';
-import Img from '../assets/avatar.jpg';
 import { Formik, Field, ErrorMessage } from 'formik';
 import { toast } from 'react-toastify';
 import * as yup from 'yup';
 import { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import routes from '../routes.js';
-import { useNavigate } from 'react-router-dom';
-import { AppContext } from './App.jsx';
 import { useTranslation } from 'react-i18next';
+import routes from '../routes.js';
+import { AppContext } from './App.jsx';
+import Img from '../assets/avatar.jpg';
 
 const LoginPage = () => {
   const { logIn } = useContext(AppContext);
@@ -39,15 +38,15 @@ const LoginPage = () => {
   };
 
   return (
-    <Container fluid className='h-100'>
-      <Row className='justify-content-center align-content-center h-100'>
+    <Container fluid className="h-100">
+      <Row className="justify-content-center align-content-center h-100">
         <Col xs={12} md={8} xxl={6}>
-          <Card className='shadow-sm'>
-            <Card.Body className='row p-5'>
+          <Card className="shadow-sm">
+            <Card.Body className="row p-5">
               <Col
                 xs={12}
                 md={6}
-                className='d-flex align-items-center justify-content-center'
+                className="d-flex align-items-center justify-content-center"
               >
                 <Image roundedCircle src={Img} alt={t('loginPage.logIn')} />
               </Col>
@@ -58,7 +57,7 @@ const LoginPage = () => {
                   try {
                     const response = await axios.post(
                       routes.loginPath(),
-                      values
+                      values,
                     );
                     const data = JSON.stringify(response.data);
                     localStorage.setItem('user', data);
@@ -84,47 +83,49 @@ const LoginPage = () => {
                 }}
               >
                 {(props) => {
-                  const { touched, errors, isSubmitting, handleSubmit } = props;
+                  const {
+                    touched, errors, isSubmitting, handleSubmit,
+                  } = props;
                   return (
                     <Form
                       onSubmit={handleSubmit}
-                      className='col-12 col-md-6 mt-3 mt-mb-0'
+                      className="col-12 col-md-6 mt-3 mt-mb-0"
                     >
-                      <h1 className='text-center mb-4'>
+                      <h1 className="text-center mb-4">
                         {t('loginPage.logIn')}
                       </h1>
                       <FloatingLabel
-                        controlId='username'
+                        controlId="username"
                         label={t('loginPage.usernameInput')}
-                        className='mb-3'
+                        className="mb-3"
                       >
                         <Field
                           autoFocus
-                          name='username'
-                          id='username'
+                          name="username"
+                          id="username"
                           placeholder={t('loginPage.usernameInput')}
                           className={`form-control ${
-                            (touched.username && errors.username) ||
-                            errors.username === ''
+                            (touched.username && errors.username)
+                            || errors.username === ''
                               ? 'is-invalid'
                               : ''
                           }`}
                         />
                         <ErrorMessage
-                          component='div'
-                          name='username'
-                          className='invalid-tooltip'
+                          component="div"
+                          name="username"
+                          className="invalid-tooltip"
                         />
                       </FloatingLabel>
                       <FloatingLabel
-                        controlId='password'
+                        controlId="password"
                         label={t('loginPage.passwordInput')}
-                        className='mb-4'
+                        className="mb-4"
                       >
                         <Field
-                          type='password'
-                          name='password'
-                          id='password'
+                          type="password"
+                          name="password"
+                          id="password"
                           placeholder={t('loginPage.passwordInput')}
                           className={`form-control ${
                             touched.password && errors.password
@@ -133,16 +134,16 @@ const LoginPage = () => {
                           }`}
                         />
                         <ErrorMessage
-                          component='div'
-                          name='password'
-                          className='invalid-tooltip'
+                          component="div"
+                          name="password"
+                          className="invalid-tooltip"
                         />
                       </FloatingLabel>
                       <Button
                         disabled={isSubmitting}
-                        variant='outline-primary'
-                        type='submit'
-                        className='w-100 mb-3'
+                        variant="outline-primary"
+                        type="submit"
+                        className="w-100 mb-3"
                       >
                         {t('loginPage.logIn')}
                       </Button>
@@ -151,10 +152,13 @@ const LoginPage = () => {
                 }}
               </Formik>
             </Card.Body>
-            <Card.Footer className='p-4'>
-              <div className='text-center'>
-                <span>{t('loginPage.noAccount')} </span>
-                <Link to='/signup'>{t('signupPage.signUp')}</Link>
+            <Card.Footer className="p-4">
+              <div className="text-center">
+                <span>
+                  {t('loginPage.noAccount')}
+                  {' '}
+                </span>
+                <Link to="/signup">{t('signupPage.signUp')}</Link>
               </div>
             </Card.Footer>
           </Card>

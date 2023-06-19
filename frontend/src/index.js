@@ -2,8 +2,8 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import { io } from 'socket.io-client';
-import init from './init.js';
 import { Provider, ErrorBoundary } from '@rollbar/react';
+import init from './init.js';
 
 export const socket = io();
 
@@ -22,7 +22,7 @@ const app = async () => {
       <Provider config={rollbarConfig}>
         <ErrorBoundary>{vdom}</ErrorBoundary>
       </Provider>
-    </React.StrictMode>
+    </React.StrictMode>,
   );
 };
 

@@ -3,10 +3,10 @@ import { Button, Form, Modal } from 'react-bootstrap';
 import { Formik, Field, ErrorMessage } from 'formik';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { actions as channelsActions } from '../../slices/channelsSlice.js';
 import * as yup from 'yup';
-import { socket } from '../../index.js';
 import { toast } from 'react-toastify';
+import { actions as channelsActions } from '../../slices/channelsSlice.js';
+import { socket } from '../../index.js';
 import { ChatContext } from '../ChatPage.jsx';
 
 const Add = ({ onHide }) => {
@@ -19,7 +19,7 @@ const Add = ({ onHide }) => {
 
   useEffect(() => {
     inputRef.current.focus();
-  });
+  }, []);
 
   const addSchema = yup.object().shape({
     name: yup
@@ -55,7 +55,7 @@ const Add = ({ onHide }) => {
                   setSubmitting(false);
                   setMessagesCount(0);
                   dispatch(
-                    channelsActions.setCurrentChannelId(response.data.id)
+                    channelsActions.setCurrentChannelId(response.data.id),
                   );
                   notifySuccess();
                   onHide();
@@ -80,33 +80,33 @@ const Add = ({ onHide }) => {
                   <Field
                     innerRef={(f) => (inputRef.current = f)}
                     disabled={isSubmitting}
-                    name='name'
-                    id='name'
+                    name="name"
+                    id="name"
                     className={`form-control mb-2${
                       errors.name ? ' is-invalid' : ''
                     }`}
                   />
-                  <Form.Label className='visually-hidden' htmlFor='name'>
+                  <Form.Label className="visually-hidden" htmlFor="name">
                     {t('chatPage.channelName')}
                   </Form.Label>
                   <ErrorMessage
-                    component='div'
-                    name='name'
-                    className='invalid-feedback'
+                    component="div"
+                    name="name"
+                    className="invalid-feedback"
                   />
-                  <div className='d-flex justify-content-end'>
+                  <div className="d-flex justify-content-end">
                     <Button
                       onClick={onHide}
-                      type='button'
-                      variant='secondary'
-                      className='me-2'
+                      type="button"
+                      variant="secondary"
+                      className="me-2"
                     >
                       {t('chatPage.cancel')}
                     </Button>
                     <Button
                       disabled={isSubmitting}
-                      type='submit'
-                      variant='primary'
+                      type="submit"
+                      variant="primary"
                     >
                       {t('chatPage.send')}
                     </Button>

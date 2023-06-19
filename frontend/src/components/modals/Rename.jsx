@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { actions as channelsActions } from '../../slices/channelsSlice.js';
 import * as yup from 'yup';
 import { Modal, Form, Button } from 'react-bootstrap';
 import { Formik, Field, ErrorMessage } from 'formik';
-import { socket } from '../../index.js';
 import { toast } from 'react-toastify';
+import { socket } from '../../index.js';
+import { actions as channelsActions } from '../../slices/channelsSlice.js';
 
 const Rename = ({ modalInfo, onHide }) => {
   const { t } = useTranslation();
@@ -14,7 +14,7 @@ const Rename = ({ modalInfo, onHide }) => {
   const channels = useSelector((state) => state.channelsInfo.channels);
   const channelNames = channels.map((item) => item.name);
   const currentChannelName = useSelector(
-    (state) => state.channelsInfo.currentChannelName
+    (state) => state.channelsInfo.currentChannelName,
   );
   const { item } = modalInfo;
   const inputRef = useRef();
@@ -58,9 +58,9 @@ const Rename = ({ modalInfo, onHide }) => {
                 (err, response) => {
                   if (response?.status === 'ok') {
                     setSubmitting(false);
-                    currentChannelName === item.name &&
-                      dispatch(
-                        channelsActions.setCurrentChannelName(values.name)
+                    currentChannelName === item.name
+                      && dispatch(
+                        channelsActions.setCurrentChannelName(values.name),
                       );
                     notifySuccess();
                     onHide();
@@ -72,7 +72,7 @@ const Rename = ({ modalInfo, onHide }) => {
                     notifyError();
                     console.error(err);
                   }
-                }
+                },
               );
           }}
           validateOnChange={false}
@@ -87,33 +87,33 @@ const Rename = ({ modalInfo, onHide }) => {
                     innerRef={(f) => (inputRef.current = f)}
                     autoFocus
                     disabled={isSubmitting}
-                    name='name'
-                    id='name'
+                    name="name"
+                    id="name"
                     className={`form-control mb-2${
                       errors.name ? ' is-invalid' : ''
                     }`}
                   />
-                  <Form.Label className='visually-hidden' htmlFor='name'>
+                  <Form.Label className="visually-hidden" htmlFor="name">
                     {t('chatPage.channelName')}
                   </Form.Label>
                   <ErrorMessage
-                    component='div'
-                    name='name'
-                    className='invalid-feedback'
+                    component="div"
+                    name="name"
+                    className="invalid-feedback"
                   />
-                  <div className='d-flex justify-content-end'>
+                  <div className="d-flex justify-content-end">
                     <Button
                       onClick={onHide}
-                      type='button'
-                      variant='secondary'
-                      className='me-2'
+                      type="button"
+                      variant="secondary"
+                      className="me-2"
                     >
                       {t('chatPage.cancel')}
                     </Button>
                     <Button
                       disabled={isSubmitting}
-                      type='submit'
-                      variant='primary'
+                      type="submit"
+                      variant="primary"
                     >
                       {t('chatPage.send')}
                     </Button>

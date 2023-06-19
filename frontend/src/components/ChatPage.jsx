@@ -1,10 +1,11 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { Container, Row } from 'react-bootstrap';
-import { useEffect, useState, useRef, createContext } from 'react';
+import {
+  useEffect, useState, useRef, createContext,
+} from 'react';
 import { useDispatch } from 'react-redux';
+import axios from 'axios';
 import { actions as channelsActions } from '../slices/channelsSlice.js';
 import { actions as messagesActions } from '../slices/messagesSlice.js';
-import axios from 'axios';
 import routes from '../routes.js';
 import Spinner from './Spinner.jsx';
 import getModal from './modals/index.js';
@@ -54,7 +55,7 @@ const ChatPage = () => {
         dispatch(messagesActions.addMessages(messages));
         dispatch(channelsActions.setCurrentChannelId(currentChannelId));
         const defaultMessagesCount = data.messages.filter(
-          (item) => item.channelId === currentChannelId
+          (item) => item.channelId === currentChannelId,
         ).length;
         setMessagesCount(defaultMessagesCount);
       }
@@ -76,8 +77,8 @@ const ChatPage = () => {
         getAuthToken,
       }}
     >
-      <Container className='h-100 my-4 overflow-hidden rounded shadow'>
-        <Row className='h-100 bg-white flex-md-row'>
+      <Container className="h-100 my-4 overflow-hidden rounded shadow">
+        <Row className="h-100 bg-white flex-md-row">
           <Channels showModal={showModal} />
           <Messages />
         </Row>

@@ -6,7 +6,7 @@ import { Provider, ErrorBoundary } from '@rollbar/react';
 import init from './init.js';
 
 const rollbarConfig = {
-  accessToken: process.env.ROLLBAR_TOKEN,
+  accessToken: '7ca276920bc140f69cc97995d68e751f',
   environment: 'production',
 };
 

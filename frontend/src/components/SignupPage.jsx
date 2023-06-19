@@ -16,11 +16,11 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import routes from '../routes.js';
-import { AppContext } from './App.jsx';
+import { AuthContext } from '../contexts/index.js';
 import Img from '../assets/avatar_1.jpg';
 
 const SignupPage = () => {
-  const { logIn } = useContext(AppContext);
+  const { logIn } = useContext(AuthContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
 

@@ -5,14 +5,13 @@ import { io } from 'socket.io-client';
 import { Provider, ErrorBoundary } from '@rollbar/react';
 import init from './init.js';
 
-export const socket = io();
-
 const rollbarConfig = {
   accessToken: '7ca276920bc140f69cc97995d68e751f',
   environment: 'production',
 };
 
 const app = async () => {
+  const socket = io();
   const container = document.getElementById('root');
   const root = createRoot(container);
   const vdom = await init(socket);

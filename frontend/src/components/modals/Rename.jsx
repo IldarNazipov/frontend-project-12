@@ -1,21 +1,17 @@
-import { useEffect, useRef } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import * as yup from 'yup';
 import { Modal, Form, Button } from 'react-bootstrap';
 import { Formik, Field, ErrorMessage } from 'formik';
 import { toast } from 'react-toastify';
-import { socket } from '../../index.js';
-import { actions as channelsActions } from '../../slices/channelsSlice.js';
+import { SocketContext } from '../../contexts/index.js';
 
 const Rename = ({ modalInfo, onHide }) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const { renameChannel } = useContext(SocketContext);
   const channels = useSelector((state) => state.channelsInfo.channels);
   const channelNames = channels.map((item) => item.name);
-  const currentChannelName = useSelector(
-    (state) => state.channelsInfo.currentChannelName,
-  );
   const { item } = modalInfo;
   const inputRef = useRef();
 
@@ -49,31 +45,15 @@ const Rename = ({ modalInfo, onHide }) => {
         <Formik
           initialValues={{ name: item.name }}
           validationSchema={renameSchema}
-          onSubmit={(values, { setSubmitting }) => {
-            socket
-              .timeout(5000)
-              .emit(
-                'renameChannel',
-                { id: item.id, name: values.name },
-                (err, response) => {
-                  if (response?.status === 'ok') {
-                    setSubmitting(false);
-                    currentChannelName === item.name
-                      && dispatch(
-                        channelsActions.setCurrentChannelName(values.name),
-                      );
-                    notifySuccess();
-                    onHide();
-                  } else {
-                    setSubmitting(false);
-                    setTimeout(() => {
-                      inputRef.current.select();
-                    }, 0);
-                    notifyError();
-                    console.error(err);
-                  }
-                },
-              );
+          onSubmit={async (values, { setSubmitting }) => {
+            try {
+              await renameChannel(item.id, values.name);
+              notifySuccess();
+              onHide();
+            } catch {
+              notifyError();
+            }
+            setSubmitting(false);
           }}
           validateOnChange={false}
           validateOnBlur={false}
@@ -84,7 +64,7 @@ const Rename = ({ modalInfo, onHide }) => {
               <Form onSubmit={handleSubmit}>
                 <div>
                   <Field
-                    innerRef={(f) => (inputRef.current = f)}
+                    innerRef={(f) => { inputRef.current = f; }}
                     autoFocus
                     disabled={isSubmitting}
                     name="name"

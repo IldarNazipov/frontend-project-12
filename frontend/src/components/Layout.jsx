@@ -2,10 +2,10 @@ import { useContext } from 'react';
 import { Navbar, Container, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AppContext } from './App.jsx';
+import { AuthContext } from '../contexts/index.js';
 
 const Layout = ({ children }) => {
-  const { loggedIn, logOut } = useContext(AppContext);
+  const { loggedIn, logOut } = useContext(AuthContext);
   const { t } = useTranslation();
 
   return (

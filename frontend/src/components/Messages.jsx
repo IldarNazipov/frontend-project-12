@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-one-expression-per-line */
 import { useContext, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -8,12 +9,12 @@ import {
 import { Formik, Field } from 'formik';
 import { toast } from 'react-toastify';
 import * as yup from 'yup';
-import { socket } from '../index.js';
-import { ChatContext } from './ChatPage.jsx';
+import { ChatContext, SocketContext } from '../contexts/index.js';
 
 const Messages = () => {
   const { t } = useTranslation();
   const { inputRef, messagesCount, setMessagesCount } = useContext(ChatContext);
+  const { sendMessage } = useContext(SocketContext);
   const messages = useSelector((state) => state.messagesInfo.messages);
   const channels = useSelector((state) => state.channelsInfo.channels);
   const currentChannelId = useSelector(
@@ -26,6 +27,7 @@ const Messages = () => {
     (message) => message.channelId === currentChannelId,
   );
   const authorizedUser = JSON.parse(localStorage.getItem('user')).username;
+
   useEffect(() => {
     animateScroll.scrollToBottom({
       containerId: 'messages-box',
@@ -49,10 +51,7 @@ const Messages = () => {
       <div className="d-flex flex-column h-100">
         <div className="bg-light mb-4 p-3 shadow-sm small">
           <p className="m-0">
-            <b>
-              #
-              {currentChannel?.name}
-            </b>
+            <b># {currentChannel?.name}</b>
           </p>
           <span className="text-muted">
             {t('chatPage.messages', { count: messagesCount })}
@@ -64,10 +63,7 @@ const Messages = () => {
               .filter((message) => currentChannel?.id === message.channelId)
               .map((message) => (
                 <div key={message.id} className="text-break mb-2">
-                  <b>{message.username}</b>
-                  :
-                  {message.body}
-                  {' '}
+                  <b>{message.username}</b>: {message.body}
                 </div>
               ))}
         </div>
@@ -75,32 +71,17 @@ const Messages = () => {
           <Formik
             initialValues={{ body: '' }}
             validationSchema={messageSchema}
-            onSubmit={(values, { resetForm, setSubmitting }) => {
-              socket.timeout(5000).emit(
-                'newMessage',
-                {
-                  body: values.body,
-                  channelId: currentChannel.id,
-                  username: authorizedUser,
-                },
-                (err, response) => {
-                  if (response?.status === 'ok') {
-                    setSubmitting(false);
-                    setMessagesCount(messagesCount + 1);
-                    resetForm({ body: '' });
-                    setTimeout(() => {
-                      inputRef.current.focus();
-                    }, 0);
-                  } else {
-                    setSubmitting(false);
-                    notifyError();
-                    setTimeout(() => {
-                      inputRef.current.select();
-                    }, 0);
-                    console.error(err);
-                  }
-                },
-              );
+            onSubmit={async (values, { resetForm, setSubmitting }) => {
+              try {
+                await sendMessage(values.body, currentChannel.id, authorizedUser);
+                resetForm({ body: '' });
+              } catch {
+                notifyError();
+              }
+              setSubmitting(false);
+              setTimeout(() => {
+                inputRef.current.focus();
+              }, 0);
             }}
           >
             {(props) => {
@@ -118,7 +99,7 @@ const Messages = () => {
                     <Field
                       disabled={isSubmitting}
                       autoFocus
-                      innerRef={(f) => (inputRef.current = f)}
+                      innerRef={(f) => { inputRef.current = f; }}
                       name="body"
                       placeholder={t('chatPage.inputMessage')}
                       className="border-0 p-0 ps-2 form-control"

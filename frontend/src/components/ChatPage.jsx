@@ -1,9 +1,10 @@
 import { Container, Row } from 'react-bootstrap';
 import {
-  useEffect, useState, useRef, createContext,
+  useEffect, useState, useRef,
 } from 'react';
 import { useDispatch } from 'react-redux';
 import axios from 'axios';
+import { ChatContext } from '../contexts/index.js';
 import { actions as channelsActions } from '../slices/channelsSlice.js';
 import { actions as messagesActions } from '../slices/messagesSlice.js';
 import routes from '../routes.js';
@@ -62,9 +63,7 @@ const ChatPage = () => {
     };
 
     fetchData();
-  }, []);
-
-  useEffect(() => {});
+  }, [dispatch]);
 
   return loading ? (
     <Spinner />
@@ -87,5 +86,4 @@ const ChatPage = () => {
     </ChatContext.Provider>
   );
 };
-export const ChatContext = createContext({});
 export default ChatPage;

@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { animateScroll } from 'react-scroll';
 import { actions as channelsActions } from '../slices/channelsSlice.js';
-import { ChatContext } from './ChatPage.jsx';
+import { ChatContext } from '../contexts/index.js';
 
 const Channels = ({ showModal }) => {
   const { t } = useTranslation();

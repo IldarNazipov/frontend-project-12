@@ -1,14 +1,15 @@
 import {
   Route, Routes, BrowserRouter, Navigate,
 } from 'react-router-dom';
-import { createContext, useState } from 'react';
+import { useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import ErrorPage from './ErrorPage.jsx';
 import LoginPage from './LoginPage.jsx';
 import Layout from './Layout.jsx';
-import ChatPage from './ChatPage.jsx';
 import 'react-toastify/dist/ReactToastify.css';
 import SignupPage from './SignupPage.jsx';
+import { AuthContext } from '../contexts/index.js';
+import ChatPage from './ChatPage.jsx';
 
 const checkAuth = () => {
   const lsItem = JSON.parse(localStorage.getItem('user'));
@@ -27,7 +28,7 @@ const App = () => {
   };
 
   return (
-    <AppContext.Provider value={{ loggedIn, logOut, logIn }}>
+    <AuthContext.Provider value={{ loggedIn, logOut, logIn }}>
       <BrowserRouter>
         <Layout>
           <Routes>
@@ -42,8 +43,8 @@ const App = () => {
         </Layout>
         <ToastContainer />
       </BrowserRouter>
-    </AppContext.Provider>
+    </AuthContext.Provider>
   );
 };
-export const AppContext = createContext({});
+
 export default App;

@@ -6,13 +6,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import * as yup from 'yup';
 import { toast } from 'react-toastify';
 import { actions as channelsActions } from '../../slices/channelsSlice.js';
-import { socket } from '../../index.js';
-import { ChatContext } from '../ChatPage.jsx';
+import { ChatContext, SocketContext } from '../../contexts/index.js';
 
 const Add = ({ onHide }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const { setMessagesCount } = useContext(ChatContext);
+  const { addChannel } = useContext(SocketContext);
   const channels = useSelector((state) => state.channelsInfo.channels);
   const channelNames = channels.map((item) => item.name);
   const inputRef = useRef();
@@ -47,27 +47,17 @@ const Add = ({ onHide }) => {
         <Formik
           initialValues={{ name: '' }}
           validationSchema={addSchema}
-          onSubmit={(values, { setSubmitting }) => {
-            socket
-              .timeout(5000)
-              .emit('newChannel', { name: values.name }, (err, response) => {
-                if (response?.status === 'ok') {
-                  setSubmitting(false);
-                  setMessagesCount(0);
-                  dispatch(
-                    channelsActions.setCurrentChannelId(response.data.id),
-                  );
-                  notifySuccess();
-                  onHide();
-                } else {
-                  setSubmitting(false);
-                  setTimeout(() => {
-                    inputRef.current.select();
-                  }, 0);
-                  notifyError();
-                  console.error(err);
-                }
-              });
+          onSubmit={async (values, { setSubmitting }) => {
+            try {
+              const response = await addChannel(values.name);
+              dispatch(channelsActions.setCurrentChannelId(response.data.id));
+              setMessagesCount(0);
+              notifySuccess();
+              onHide();
+            } catch {
+              notifyError();
+            }
+            setSubmitting(false);
           }}
           validateOnChange={false}
           validateOnBlur={false}
@@ -78,7 +68,7 @@ const Add = ({ onHide }) => {
               <Form onSubmit={handleSubmit}>
                 <div>
                   <Field
-                    innerRef={(f) => (inputRef.current = f)}
+                    innerRef={(f) => { inputRef.current = f; }}
                     disabled={isSubmitting}
                     name="name"
                     id="name"

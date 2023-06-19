@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { socket } from '../../index.js';
+import { SocketContext } from '../../contexts';
 
 const Remove = ({ modalInfo, onHide }) => {
   const { t } = useTranslation();
   const [isSubmitting, setSubmitting] = useState(false);
+  const { removeChannel } = useContext(SocketContext);
   const { item } = modalInfo;
 
   const notifyError = () => {
@@ -16,20 +17,16 @@ const Remove = ({ modalInfo, onHide }) => {
     toast.success(t('channelRemoved'));
   };
 
-  const handleClick = () => {
+  const handleClick = async () => {
     setSubmitting(true);
-    socket
-      .timeout(3000)
-      .emit('removeChannel', { id: item.id }, (err, response) => {
-        if (response?.status === 'ok') {
-          notifySuccess();
-          onHide();
-        } else {
-          setSubmitting(false);
-          notifyError();
-          console.error(err);
-        }
-      });
+    try {
+      await removeChannel(item.id);
+      notifySuccess();
+      onHide();
+    } catch {
+      notifyError();
+    }
+    setSubmitting(false);
   };
 
   return (

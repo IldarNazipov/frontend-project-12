@@ -9,12 +9,13 @@ import {
 import { Formik, Field } from 'formik';
 import { toast } from 'react-toastify';
 import * as yup from 'yup';
-import { ChatContext, SocketContext } from '../contexts/index.js';
+import { AuthContext, ChatContext, SocketContext } from '../contexts/index.js';
 
 const Messages = () => {
   const { t } = useTranslation();
   const { inputRef, messagesCount, setMessagesCount } = useContext(ChatContext);
   const { sendMessage } = useContext(SocketContext);
+  const { authorizedUser } = useContext(AuthContext);
   const messages = useSelector((state) => state.messagesInfo.messages);
   const channels = useSelector((state) => state.channelsInfo.channels);
   const currentChannelId = useSelector(
@@ -26,7 +27,6 @@ const Messages = () => {
   const currentChannelMessages = messages.filter(
     (message) => message.channelId === currentChannelId,
   );
-  const authorizedUser = JSON.parse(localStorage.getItem('user')).username;
 
   useEffect(() => {
     animateScroll.scrollToBottom({

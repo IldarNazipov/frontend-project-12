@@ -60,8 +60,7 @@ const LoginPage = () => {
                       values,
                     );
                     const data = JSON.stringify(response.data);
-                    localStorage.setItem('user', data);
-                    logIn();
+                    logIn(data);
                     navigate('/');
                   } catch (error) {
                     if (error.message === 'Network Error') {

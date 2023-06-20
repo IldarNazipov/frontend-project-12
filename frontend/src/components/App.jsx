@@ -21,14 +21,22 @@ const checkAuth = () => {
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(checkAuth);
-  const logIn = () => setLoggedIn(true);
+  const [authorizedUser, setAuthorizedUser] = useState();
+  const logIn = (data) => {
+    localStorage.setItem('user', data);
+    setAuthorizedUser(JSON.parse(data).username);
+    setLoggedIn(true);
+  };
   const logOut = () => {
     localStorage.removeItem('user');
     setLoggedIn(false);
   };
 
   return (
-    <AuthContext.Provider value={{ loggedIn, logOut, logIn }}>
+    <AuthContext.Provider value={{
+      loggedIn, logOut, logIn, authorizedUser,
+    }}
+    >
       <BrowserRouter>
         <Layout>
           <Routes>

@@ -1,7 +1,7 @@
 import {
   Route, Routes, BrowserRouter, Navigate,
 } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import ErrorPage from './ErrorPage.jsx';
 import LoginPage from './LoginPage.jsx';
@@ -21,10 +21,16 @@ const checkAuth = () => {
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(checkAuth);
-  const [authorizedUser, setAuthorizedUser] = useState();
+  const [authorizedUser, setAuthorizedUser] = useState('');
+
+  useEffect(() => {
+    if (loggedIn) {
+      setAuthorizedUser(JSON.parse(localStorage.getItem('user')).username);
+    }
+  }, [loggedIn]);
+
   const logIn = (data) => {
     localStorage.setItem('user', data);
-    setAuthorizedUser(JSON.parse(data).username);
     setLoggedIn(true);
   };
   const logOut = () => {
